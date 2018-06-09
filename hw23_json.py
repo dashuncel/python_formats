@@ -4,6 +4,7 @@ import chardet
 #import xml
 #import xml.etree.ElementTree as ET
 
+# возвращает ключ по значению из словаря:
 def getKeys(dict, val):
     keys = []
     for key, elem in dict.items():
@@ -12,6 +13,7 @@ def getKeys(dict, val):
     return keys
 
 
+# возвращает словарь "слово" - частота
 def det_frequency(text):
     wordlist = text.lower().split(None)
     frequencies = {}
@@ -26,11 +28,18 @@ def det_frequency(text):
     return frequencies
 
 
-def read_json(file_name):
-    with open(file_name) as f:
-        text = json.load(f)
+# читает json файл в заданной кодировке, возвращает частосту слов:
+def read_json(file_name, codePage):
+    with open(file_name, encoding=codePage) as f:
+        try:
+            text = json.load(f)
+        except UnicodeError:
+            print('Не могу прочитать файл "{}" в кодировке {}'.format(file_name, codePage))
+            return
+
         list_news = text['rss']['channel']['items']
         data = ''
+
         for new in list_news:
             data += new['description']
 
@@ -43,13 +52,13 @@ def read_json(file_name):
         i += 1
 
 
+# читает xml-файл
 def read_xml(file_name):
     pass
     #tree = ET.parse(file_name)
 
 
-list_files = ['newsfr.json', 'newscy.json', 'newsit.json']
-#, 'newsafr.json'
+list_files = ['newsafr.json', 'newsfr.json', 'newscy.json', 'newsit.json']
 #'newsfr.xml', 'newsit.xml', 'newsafr.xml', 'newscy.xml', 'newscy.xm'
 
 for news_file in list_files:
@@ -57,7 +66,13 @@ for news_file in list_files:
     extent = tmpstr[len(tmpstr) - 1]
 
     if extent == 'json':
-        read_json(news_file)
+        # предварительно определяем кодироку текста:
+        with open(news_file, 'rb') as f:
+            data = f.read()
+            result = chardet.detect(data)
+            codePage = result['encoding']
+
+        read_json(news_file, codePage)
     elif extent == 'xml':
         read_xml(news_file)
     else:
