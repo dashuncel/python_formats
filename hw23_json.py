@@ -28,6 +28,15 @@ def det_frequency(text):
     return frequencies
 
 
+# вывод на печать топ-6 частов встречающихся слов:
+def print_frequency(frequency, file_name):
+    i = 0
+    req = sorted(list(frequency.values()), reverse=True)
+    print('Часто встречающиеся слова в файле "{}":'.format(file_name))
+    while i < min(6, len(req)):
+        print('{} - {} раз'.format(getKeys(frequency, req[i]), req[i]))
+        i += 1
+
 # читает json файл в заданной кодировке, возвращает частосту слов:
 def read_json(file_name, codePage):
     with open(file_name, encoding=codePage) as f:
@@ -48,13 +57,7 @@ def read_json(file_name, codePage):
         for new in list_news:
             data += new['description']
 
-    frequency = det_frequency(data)
-    i = 0
-    req = sorted(list(frequency.values()), reverse=True)
-    print('Часто встречающиеся слова в файле "{}":'.format(file_name))
-    while i < min(6, len(req)):
-        print('{} - {} раз'.format(getKeys(frequency, req[i]), req[i]))
-        i += 1
+    print_frequency(det_frequency(data), file_name)
 
 
 # читает xml-файл
@@ -67,13 +70,15 @@ def read_xml(file_name, codePage):
         print('Не могу распарсить xml из файла {}!'.format(file_name))
         return
 
-    for el in tree.findall('item'):
-        print(el.text)
+    for child in tree.iter('item'):
+        data += child.find('description').text
+
+    print_frequency(det_frequency(data), file_name)
 
 
-#list_files = ['newsafr.json', 'newsfr.json', 'newscy.json', 'newsit.json', 'newsfr.xml', 'newsit.xml', 'newsafr.xml', 'newscy.xml']
+list_files = ['newsafr.json', 'newsfr.json', 'newscy.json', 'newsit.json', 'newsfr.xml', 'newsit.xml', 'newsafr.xml', 'newscy.xml']
 #list_files = ['newsfr.xml', 'newsit.xml', 'newsafr.xml', 'newscy.xml']
-list_files = ['newsafr.json', 'newsfr.json', 'newscy.json', 'newsit.json']
+#list_files = ['newsafr.json', 'newsfr.json', 'newscy.json', 'newsit.json']
 
 for news_file in list_files:
     tmp_str = news_file.split('.')
