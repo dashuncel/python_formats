@@ -4,7 +4,6 @@ from pprint import pprint
 import chardet
 import xml.etree.ElementTree as ET
 
-
 # возвращает ключ по значению из словаря:
 def getKeys(dict, val):
     keys = []
@@ -63,20 +62,18 @@ def read_xml(file_name, codePage):
     try:
         with open(file_name, encoding=codePage) as f:
             data = f.read()
-        tree = ET.fromstring(data)
+            tree = ET.fromstring(data)
     except UnicodeError:
         print('Не могу распарсить xml из файла {}!'.format(file_name))
         return
 
-    for new in tree.findall('item'):
-        print(new)
-
+    for el in tree.findall('item'):
+        print(el.text)
 
 
 #list_files = ['newsafr.json', 'newsfr.json', 'newscy.json', 'newsit.json', 'newsfr.xml', 'newsit.xml', 'newsafr.xml', 'newscy.xml']
 #list_files = ['newsfr.xml', 'newsit.xml', 'newsafr.xml', 'newscy.xml']
 list_files = ['newsafr.json', 'newsfr.json', 'newscy.json', 'newsit.json']
-
 
 for news_file in list_files:
     tmp_str = news_file.split('.')
