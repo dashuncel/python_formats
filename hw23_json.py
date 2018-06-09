@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 import json
 from pprint import pprint
 import chardet
-#import xml
-#import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET
+
 
 # возвращает ключ по значению из словаря:
 def getKeys(dict, val):
@@ -37,7 +38,12 @@ def read_json(file_name, codePage):
             print('Не могу прочитать файл "{}" в кодировке {}'.format(file_name, codePage))
             return
 
-        list_news = text['rss']['channel']['items']
+        try:
+            list_news = text['rss']['channel']['items']
+        except IndexError:
+            print('Неверная структура данных файла {}'.format(file_name))
+            return
+
         data = ''
 
         for new in list_news:
@@ -53,27 +59,37 @@ def read_json(file_name, codePage):
 
 
 # читает xml-файл
-def read_xml(file_name):
-    pass
-    #tree = ET.parse(file_name)
+def read_xml(file_name, codePage):
+    try:
+        with open(file_name, encoding=codePage) as f:
+            data = f.read()
+        tree = ET.fromstring(data)
+    except UnicodeError:
+        print('Не могу распарсить xml из файла {}!'.format(file_name))
+        return
+
+    for new in tree.findall('item'):
+        print(new)
 
 
+
+#list_files = ['newsafr.json', 'newsfr.json', 'newscy.json', 'newsit.json', 'newsfr.xml', 'newsit.xml', 'newsafr.xml', 'newscy.xml']
+#list_files = ['newsfr.xml', 'newsit.xml', 'newsafr.xml', 'newscy.xml']
 list_files = ['newsafr.json', 'newsfr.json', 'newscy.json', 'newsit.json']
-#'newsfr.xml', 'newsit.xml', 'newsafr.xml', 'newscy.xml', 'newscy.xm'
+
 
 for news_file in list_files:
-    tmpstr = news_file.split('.')
-    extent = tmpstr[len(tmpstr) - 1]
+    tmp_str = news_file.split('.')
+    extent = tmp_str[len(tmp_str) - 1]
+
+    with open(news_file, 'rb') as f:
+        data = f.read()
+        result = chardet.detect(data)
+        codePage = result['encoding']
 
     if extent == 'json':
-        # предварительно определяем кодироку текста:
-        with open(news_file, 'rb') as f:
-            data = f.read()
-            result = chardet.detect(data)
-            codePage = result['encoding']
-
         read_json(news_file, codePage)
     elif extent == 'xml':
-        read_xml(news_file)
+        read_xml(news_file, codePage)
     else:
         print('Не умею читать файлы с расширением "{}"'.format(extent))
